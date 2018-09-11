@@ -1,0 +1,15 @@
+<html>
+<head></head>
+<body>
+	<form method="post" action="/token/">
+		{% csrf_token %}
+		<div align="center">
+			<table>
+				{{ form }}
+			</table>
+			<br>
+			<input type="submit" name="submit" value="Submit">
+		</div>
+	</form>
+</body>
+</html>

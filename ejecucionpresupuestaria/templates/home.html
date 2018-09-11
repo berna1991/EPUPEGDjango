@@ -1,0 +1,51 @@
+<html>
+<head>
+	<style type="text/css">
+		<style type="text/css">
+		a {margin: 1em 0; float: left; clear: left;}
+
+		a.boton {
+			display: table-cell;
+			text-decoration: none;
+			background: #0072bd;
+			color: white;
+			border: 1px outset #CCC;
+			margin: 15px;
+			width: auto;
+			height: 100px;
+			padding: .1em .5em;
+			text-align: center;
+			line-height: 100px;
+		}
+
+		a.boton:hover {
+			background: #CCB;
+		}
+
+		a.boton:active {
+			border: 1px inset #000;
+		}
+
+		div.buttonContainer {
+			height: auto;
+			border-style: solid;
+			overflow: scroll;
+		}
+	</style>
+</head>
+
+<body>
+	<div>
+		<h1>Bienvenido</h1>
+		{{ nombre }}
+	</div>
+	<br>
+	<br>
+	<label>Ver presupuesto de: </label>
+	<br>
+	{% for element in dependencias %}
+		<a class="boton" href="/dependencias/?dependencia={{element.id}}">{{element.nombre}}</a>
+	{% endfor %}
+</body>
+	<a href="/sitemap/">Mapa del sitio</a>
+</html>

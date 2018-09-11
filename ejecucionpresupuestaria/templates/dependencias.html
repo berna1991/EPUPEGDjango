@@ -1,0 +1,235 @@
+<html>
+<head>
+	<style type="text/css">
+		<style type="text/css">
+		a {margin: 1em 0; float: left; clear: left;}
+
+		a.boton {
+			display: table-cell;
+			text-decoration: none;
+			background: #0072bd;
+			color: white;
+			border: 1px outset #CCC;
+			margin: 15px;
+			width: 250px;
+			height: 100px;
+			padding: .1em .5em;
+			text-align: center;
+		}
+
+		a.boton:hover {
+			background: #CCB;
+		}
+
+		a.boton:active {
+			border: 1px inset #000;
+		}
+
+		div.container {
+			height: auto;
+			border-style: solid;
+			overflow: scroll;
+		}
+
+		table, th, td{
+			border: 1px solid black;
+		}
+
+	</style>
+	</style>
+</head>
+<body>
+	Unidad ejecutora: 
+	{{nombreDependencia}}
+
+	<div id="filtros">
+		<select id="SelectPrograma" multiple="true" onchange="cambioFiltroPrograma()">
+			{% for element in opcionesPrograma %}
+				<option>{{ element.0 }}</option>
+			{% endfor %}
+		</select>
+
+		<select id="SelectProyecto" multiple="true" onchange="cambioFiltroProyecto()">
+			{% for element in opcionesProyecto %}
+				<option>{{ element.0 }}</option>
+			{% endfor %}
+		</select>		
+		<select id="SelectActividad" multiple="true" onchange="cambioFiltroActividad()">
+			{% for element in opcionesActividad %}
+				<option>{{ element.0 }}</option>
+			{% endfor %}
+		</select>		
+		<select id="SelectFuente" multiple="true" onchange="cambioFiltroFuente()">
+			{% for element in opcionesFuente %}
+				<option>{{ element.0 }}</option>
+			{% endfor %}
+		</select>		
+		<select id="SelectOrganismo" multiple="true" onchange="cambioFiltroOrganismo()">
+			{% for element in opcionesOrganismo %}
+				<option>{{ element.0 }}</option>
+			{% endfor %}
+		</select>		
+		<select id="SelectObjetoDeGasto" multiple="true" onchange="cambioFiltroObjetoDeGasto()">
+			{% for element in opcionesObjetoDeGasto %}
+				<option>{{ element.0 }}</option>
+			{% endfor %}
+		</select>		
+		<select id="SelectBeneficiario" multiple="true" onchange="cambioFiltroBeneficiario()">
+			{% for element in opcionesBeneficiario %}
+				<option>{{ element.0 }}</option>
+			{% endfor %}
+		</select>		
+	</div>
+	<div class="container" id="divTabla">
+		<table>
+			<tr>
+				{% for item in ejecucionPresupuestaria.0 %}
+					<th>{{item.key}}</th>
+				{% endfor %}
+			</tr>
+			{% for row in ejecucionPresupuestaria %}
+				<tr>
+				{% for item in row %}
+					<td>{{item.value}}</td>
+				{% endfor %}
+				</tr>
+			{% endfor %}
+		</table>
+	</div>
+
+	<br>
+	{% if subDependencias %}
+		Subdependencias:
+		<div class="container">
+			<table>
+				{% for element in subDependencias %}
+					<a class="boton" href="/dependencias/?dependencia={{element.id}}">{{element.nombre}}</a>
+				{% endfor %}
+			</table>
+		</div>
+	{% endif %}
+</body>
+
+{% block javascript %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script type="text/javascript">
+	function cambioFiltroPrograma(){
+		var selectPrograma = document.getElementById("SelectPrograma");
+		var opcionPrograma = selectPrograma.options[selectPrograma.selectedIndex].text;
+		alert(opcionPrograma);
+	}
+
+	function cambioFiltroProyecto(){
+		var SelectProyecto = document.getElementById("SelectProyecto");
+		var opcionProyecto = SelectProyecto.options[SelectProyecto.selectedIndex].text;
+		alert(opcionProyecto);
+	}
+
+	function cambioFiltroActividad(){
+		var SelectActividad = document.getElementById("SelectActividad");
+		var opcionActividad = SelectActividad.options[SelectActividad.selectedIndex].text;
+		alert(opcionActividad);
+	}
+
+	function cambioFiltroFuente(){
+		var SelectFuente = document.getElementById("SelectFuente");
+		var opcionFuente = SelectFuente.options[SelectFuente.selectedIndex].text;
+		alert(opcionFuente);
+	}
+
+	function cambioFiltroOrganismo(){
+		var SelectOrganismo = document.getElementById("SelectOrganismo");
+		var opcionesOrganismo = SelectOrganismo.options[SelectOrganismo.selectedIndex].text;
+		alert(opcionesOrganismo);
+	}
+
+	function cambioFiltroObjetoDeGasto(){
+		var SelectObjetoDeGasto = document.getElementById("SelectObjetoDeGasto");
+		var opcionObjetoDeGasto = SelectObjetoDeGasto.options[SelectObjetoDeGasto.selectedIndex].text;
+		var miFiltro = new Object();
+		var cookies = document.cookie;
+		csrftoken = cookies.split("=")[1];
+
+		var idDependencia = obtenerDependencia();
+
+		//alert(csrftoken);
+
+		var request = $.ajax({
+			url: "/filtro/",
+			type: "GET",
+			headers: {"X-CSRFToken": csrftoken},
+			data: {dependencia: idDependencia, 
+				objeto: opcionObjetoDeGasto},
+			dataType: "html",
+			success: function (response){
+				var jsonObject = JSON.parse(response);
+
+				var divTabla = document.getElementById("divTabla");
+				limpiarDiv(divTabla);
+				if(jsonObject.EjecucionPresupuestaria.length > 0){
+					var tabla = document.createElement("table");
+
+					var rowTitulos = document.createElement("tr");
+					for(var i = 0; i < jsonObject.EjecucionPresupuestaria[0].length; i++){
+						var cabeceraColumna = document.createElement("th");
+						var nombreColumna = document.createTextNode(jsonObject.EjecucionPresupuestaria[0][i].key);
+						cabeceraColumna.appendChild(nombreColumna);
+						rowTitulos.appendChild(cabeceraColumna);
+					}
+
+					tabla.appendChild(rowTitulos);
+
+
+					for(var i = 0; i < jsonObject.EjecucionPresupuestaria.length; i++){
+						var row = document.createElement("tr");
+						for(var j = 0; j < jsonObject.EjecucionPresupuestaria[i].length; j++){
+							var td = document.createElement("td");
+							textNode = document.createTextNode(jsonObject.EjecucionPresupuestaria[i][j].value);
+							td.appendChild(textNode)
+							row.appendChild(td);
+						}
+						tabla.appendChild(row);
+					}
+
+					divTabla.appendChild(tabla);
+				}
+
+			}
+		});
+
+		console.info(opcionObjetoDeGasto);
+	}
+
+	function cambioFiltroBeneficiario(){
+		var SelectBeneficiario = document.getElementById("SelectBeneficiario");
+		var opcionBeneficiario = SelectBeneficiario.options[SelectBeneficiario.selectedIndex].text;
+		alert(opcionBeneficiario);
+	}
+
+	function obtenerDependencia(){
+		var url = document.location.href;
+
+		if(url.indexOf('?') > 0){
+			var urlSplit = url.split('?')[1];
+			var variables = urlSplit.split('&');
+
+			for(var i = 0; i < variables.length; i++){
+				var tmp = variables[i].split('=');
+				if(tmp[0] == 'dependencia')
+					return(tmp[1]);
+			}
+		}
+
+		return(-1);
+	}
+
+	function limpiarDiv(div){
+		var div = document.getElementById("divTabla");
+		while (divTabla.firstChild){
+			div.removeChild(divTabla.firstChild);
+		}
+	}
+
+</script>
+{% endblock %}
+</html>
